@@ -1,8 +1,6 @@
 env:
   global:
     - REPO_DIR=treelite
-    # Commit from treelite that you want to build
-    - BUILD_COMMIT=7acfe05f32daff6b2f94384f53a2d6569a269347
     # pip dependencies to _build_ your project
     - BUILD_DEPENDS="numpy"
     # pip dependencies to _test_ your project.  Include any dependencies
@@ -103,7 +101,6 @@ before_install:
   - before_install
 
 install:
-  - source config.sh
   - build_bdist_wheel $REPO_DIR/python $PLAT
 
 script:

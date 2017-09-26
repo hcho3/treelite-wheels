@@ -21,8 +21,8 @@ function pre_build {
     ./autogen.sh
     ./configure
   fi
-  make -j8
-  sudo make install
+  make -j8 2>&1
+  sudo make install 2>&1
   cd $ROOTDIR
 
   # 1. Build treelite
@@ -31,11 +31,11 @@ function pre_build {
   cd treelite/build
   if [ -n "$IS_OSX" ]
   then
-    cmake .. -DCMAKE_CXX_COMPILER=g++-7 -DCMAKE_C_COMPILER=gcc-7
+    cmake .. -DCMAKE_CXX_COMPILER=g++-7 -DCMAKE_C_COMPILER=gcc-7 2>&1
   else
-    cmake ..
+    cmake .. 2>&1
   fi
-  make -j8
+  make -j8 2>&1
 }
 
 function run_tests {
