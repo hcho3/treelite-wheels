@@ -6,6 +6,8 @@ function pre_build {
   # Runs in the root directory of this repository.
   
   # 0. Build protobuf
+  ROOTDIR=`pwd`
+  cd ..
   git clone --recursive https://github.com/google/protobuf.git
   cd protobuf
   if [ -n "$IS_OSX" ]
@@ -21,7 +23,7 @@ function pre_build {
   fi
   make -j8
   sudo make install
-  cd ..
+  cd $ROOTDIR
 
   # 1. Build treelite
   git submodule update --init --recursive   # fetch all submodules
