@@ -10,12 +10,12 @@ function pre_build {
   cd protobuf
   if [ -n "$IS_OSX" ]
   then
-    brew install autoconf automake libtool curl gcc@7
+    brew install cmake autoconf automake libtool curl gcc@7
     ./autogen.sh
     CXX=g++-7 CC=gcc-7 ./configure
   else
     sudo apt-get update
-    sudo apt-get install autoconf automake libtool curl make g++ unzip
+    sudo apt-get install cmake autoconf automake libtool curl make g++ unzip
     ./autogen.sh
     ./configure
   fi
