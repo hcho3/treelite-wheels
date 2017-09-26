@@ -14,6 +14,7 @@ function pre_build {
     ./autogen.sh
     CXX=g++-7 CC=gcc-7 ./configure
   else
+    sudo apt-get update
     sudo apt-get install autoconf automake libtool curl make g++ unzip
     ./autogen.sh
     ./configure
