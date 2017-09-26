@@ -1,0 +1,119 @@
+env:
+  global:
+    - REPO_DIR=treelite
+    # Commit from treelite that you want to build
+    - BUILD_COMMIT=7acfe05f32daff6b2f94384f53a2d6569a269347
+    # pip dependencies to _build_ your project
+    - BUILD_DEPENDS="numpy"
+    # pip dependencies to _test_ your project.  Include any dependencies
+    # that you need, that are also specified in BUILD_DEPENDS, this will be
+    # a separate install.
+    - TEST_DEPENDS="numpy scipy pytest"
+    - PLAT=x86_64
+    - UNICODE_WIDTH=32
+    - WHEELHOUSE_UPLOADER_USERNAME=KIAJPEC76RDUVCFL2TQ
+    # Following generated with
+    # travis encrypt -r hcho3/treelite-wheels WHEELHOUSE_UPLOADER_SECRET=<the api key>
+    - secure:
+        "iDCw625JpPsMv3jkq5Fu5tM8BwkU0wYanV39t1zkCNN74Pq20CqWPuIwi7uKUepmgpynjlXD5WjvGyQzqp0GPGv+L5Ztp6sbkTi1YW8NUHRDJBBPKHAcyC7cGWGFqtUp2zaBQypdpUx4ZqJUNAm2KyaXhFJbO724fT3ijFAtzU9m4I8cbS2U4HAXeYwhp4eJLVHTuy6qMNTKCAFA15mchvtWnewfe2CgdoAdNXybjldZ4TAfV61RgcMv06A5acpdzyfhSd1bfptgIf3cLSk/J9WGrDvvBZivC5F6B2SKn3b9ukQ2nSaKJn9VN/DC1lEn5GWQVX3TjYgpyMIH/lN6IOqITZN9wGv+DL6IhKdTTxVR1EOK5jvwG5Z3xXZ1qHFwa/wS+qIi8OMynP5NeKFtdB7FXJOX7cUb7hGfswpoCjdlBO6yB3GWRxNJTRJIEgp1DQdDXC7cj/BWlkUqPd1oE7OqnDnwLJikuCZuAelmwzz/f6QnC0x+6SV/Zp7/SX6xeVeJcFhzxGjMnNXe7V11fXDPDyElAIXZEU4Chwwve+p3OrxPQj/bj/0mV5DKPaQ22AuvG6i8mObDqxmr2eexEj9tQcw9TR/76dZp5ExXuDa9Tez1DumCZw0SQOL5oXsgBxu4giXZwUI/hZYLGxIlXw6AjNPkwZABIycSXHa+jEk="
+
+language: python
+# The travis Python version is unrelated to the version we build and test
+# with.  This is set with the MB_PYTHON_VERSION variable.
+python: 3.5
+sudo: required
+dist: trusty
+services: docker
+
+matrix:
+  exclude:
+  # Exclude the default Python 3.5 build
+  - python: 3.5
+  include:
+  - os: linux
+    env:
+    - MB_PYTHON_VERSION=2.6
+  - os: linux
+    env:
+    - MB_PYTHON_VERSION=2.6
+    - PLAT=i686
+  - os: linux
+    env: MB_PYTHON_VERSION=2.7
+  - os: linux
+    env:
+    - MB_PYTHON_VERSION=2.7
+    - UNICODE_WIDTH=16
+  - os: linux
+    env:
+    - MB_PYTHON_VERSION=2.7
+    - PLAT=i686
+  - os: linux
+    env:
+    - MB_PYTHON_VERSION=2.7
+    - PLAT=i686
+    - UNICODE_WIDTH=16
+  - os: linux
+    env:
+    - MB_PYTHON_VERSION=3.3
+  - os: linux
+    env:
+    - MB_PYTHON_VERSION=3.3
+    - PLAT=i686
+  - os: linux
+    env:
+    - MB_PYTHON_VERSION=3.4
+  - os: linux
+    env:
+    - MB_PYTHON_VERSION=3.4
+    - PLAT=i686
+  - os: linux
+    env:
+    - MB_PYTHON_VERSION=3.5
+  - os: linux
+    env:
+    - MB_PYTHON_VERSION=3.5
+    - PLAT=i686
+  - os: linux
+    env:
+    - MB_PYTHON_VERSION=3.6
+  - os: linux
+    env:
+    - MB_PYTHON_VERSION=3.6
+    - PLAT=i686
+  - os: osx
+    language: generic
+    env:
+    - MB_PYTHON_VERSION=2.7
+  - os: osx
+    language: generic
+    env:
+    - MB_PYTHON_VERSION=3.4
+  - os: osx
+    language: generic
+    env:
+    - MB_PYTHON_VERSION=3.5
+  - os: osx
+    language: generic
+    env:
+    - MB_PYTHON_VERSION=3.6
+
+before_install:
+  - source multibuild/common_utils.sh
+  - source multibuild/travis_steps.sh
+  - before_install
+
+install:
+  # Maybe get and clean and patch source
+  - clean_code $REPO_DIR $BUILD_COMMIT
+  - build_bdist_wheel $REPO_DIR $PLAT
+
+script:
+  - install_run $PLAT
+
+after_success:
+  # Upload wheels to S3
+  - pip install wheelhouse-uploader
+  # This uploads the wheels to a S3 container owned by hcho3.
+  - python -m wheelhouse_uploader upload --provider S3_US_WEST
+      --local-folder ${TRAVIS_BUILD_DIR}/wheelhouse/
+      --no-update-index treelite-wheels
