@@ -23,11 +23,11 @@ function pre_build {
   cd ..
 
   # 1. Build treelite
+  git submodule update --init --recursive   # fetch all submodules
   mkdir -p treelite/build
   cd treelite/build
   if [ -n "$IS_OSX" ]
   then
-    brew install gcc@7   # install an OpenMP-compatible compiler
     cmake .. -DCMAKE_CXX_COMPILER=g++-7 -DCMAKE_C_COMPILER=gcc-7
   else
     cmake ..
