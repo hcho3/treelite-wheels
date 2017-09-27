@@ -1,6 +1,10 @@
 # Define custom utilities
 # Test for OSX with [ -n "$IS_OSX" ]
 
+function repair_wheelhouse {
+  :
+}
+
 function pre_build {
   # Any stuff that you need to do before you start building the wheels
   # Runs in the root directory of this repository.
@@ -14,16 +18,16 @@ function pre_build {
     cd protobuf
     if [ -n "$IS_OSX" ]
     then
-      brew install cmake autoconf automake libtool curl gcc@7
+      brew install cmake autoconf automake libtool curl gcc@7 1>&2
       ./autogen.sh
       CXX=g++-7 CC=gcc-7 ./configure
     else
       sudo apt-get update
-      sudo apt-get install cmake autoconf automake libtool curl make g++ unzip
+      sudo apt-get install cmake autoconf automake libtool curl make g++ unzip 1>&2
       ./autogen.sh
       ./configure
     fi
-    make -j8 1>&2
+    make -j2
     sudo make install 1>&2
     cd $ROOTDIR
   fi
@@ -38,7 +42,7 @@ function pre_build {
   else
     cmake .. 1>&2
   fi
-  make -j8 1>&2
+  make -j2 1>&2
 }
 
 function run_tests {
