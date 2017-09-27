@@ -6,7 +6,7 @@ function pre_build {
   # Runs in the root directory of this repository.
   
   # 0. Build protobuf
-  ROOTDIR=`pwd`
+  ROOTDIR=$PWD
   if [ ! -d "../protobuf" ]    # build protobuf only once
   then
     cd ..
@@ -23,7 +23,7 @@ function pre_build {
       ./autogen.sh
       ./configure
     fi
-    make -j2 2>&1
+    make -j8 2>&1
     sudo make install 2>&1
     cd $ROOTDIR
   fi
@@ -38,7 +38,7 @@ function pre_build {
   else
     cmake .. 2>&1
   fi
-  make -j2 2>&1
+  make -j8 2>&1
 }
 
 function run_tests {
