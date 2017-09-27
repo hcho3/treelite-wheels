@@ -7,23 +7,26 @@ function pre_build {
   
   # 0. Build protobuf
   ROOTDIR=`pwd`
-  cd ..
-  git clone --recursive https://github.com/google/protobuf.git
-  cd protobuf
-  if [ -n "$IS_OSX" ]
+  if [ ! -d "../protobuf" ]    # build protobuf only once
   then
-    brew install cmake autoconf automake libtool curl gcc@7
-    ./autogen.sh
-    CXX=g++-7 CC=gcc-7 ./configure
-  else
-    sudo apt-get update
-    sudo apt-get install cmake autoconf automake libtool curl make g++ unzip
-    ./autogen.sh
-    ./configure
+    cd ..
+    git clone --recursive https://github.com/google/protobuf.git
+    cd protobuf
+    if [ -n "$IS_OSX" ]
+    then
+      brew install cmake autoconf automake libtool curl gcc@7
+      ./autogen.sh
+      CXX=g++-7 CC=gcc-7 ./configure
+    else
+      sudo apt-get update
+      sudo apt-get install cmake autoconf automake libtool curl make g++ unzip
+      ./autogen.sh
+      ./configure
+    fi
+    make -j8 2>&1
+    sudo make install 2>&1
+    cd $ROOTDIR
   fi
-  make -j8 2>&1
-  sudo make install 2>&1
-  cd $ROOTDIR
 
   # 1. Build treelite
   git submodule update --init --recursive   # fetch all submodules

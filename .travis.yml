@@ -102,6 +102,7 @@ before_install:
   - before_install
 
 install:
+  - source config.sh
   - build_bdist_wheel $REPO_DIR/python $PLAT
 
 script:
