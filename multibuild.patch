@@ -1,0 +1,13 @@
+diff --git a/common_utils.sh b/common_utils.sh
+index 39b4a7d..f18140d 100644
+--- a/common_utils.sh
++++ b/common_utils.sh
+@@ -179,7 +179,7 @@ function build_bdist_wheel {
+ 
+ function build_wheel {
+     # Set default building method to pip
+-    build_pip_wheel $@
++    build_bdist_wheel $@
+ }
+ 
+ function build_index_wheel {

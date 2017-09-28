@@ -83,15 +83,17 @@ matrix:
         - MB_PYTHON_VERSION=3.6
 
 before_install:
+  - cd multibuild && git apply ../multibuild.patch && cd ..
   - source multibuild/common_utils.sh
   - source multibuild/travis_steps.sh
   - before_install
 
 install:
   - source config.sh
-  - build_bdist_wheel $PWD/$REPO_DIR/python $PLAT
+  - build_wheel $PWD/$REPO_DIR/python $PLAT
 
 script:
+  - ls -lh wheelhouse
   - install_run $PLAT
 
 after_success:
