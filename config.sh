@@ -28,7 +28,7 @@ function pre_build {
       # install essential build tools
       yum install autoconf automake unzip gcc-c++ git -y 1>&2
       # compile libtool from source, as libtool package for CentOS 5 is very outdated
-      wget http://ftpmirror.gnu.org/libtool/libtool-2.4.6.tar.gz
+      wget -nv -nc http://ftpmirror.gnu.org/libtool/libtool-2.4.6.tar.gz
       tar xvf libtool-2.4.6.tar.gz
       cd libtool-2.4.6
       ./configure
@@ -53,8 +53,14 @@ function pre_build {
     cmake .. -DCMAKE_CXX_COMPILER=g++-7 -DCMAKE_C_COMPILER=gcc-7 1>&2
   else
     # install CMake 3.1
-    wget https://cmake.org/files/v3.1/cmake-3.1.0-Linux-x86_64.sh --no-check-certificate
-    bash cmake-3.1.0-Linux-x86_64.sh --skip-license --prefix=/usr
+    if [ "$(uname -m)" == "i686" ]
+    then
+      wget -nv -nc https://cmake.org/files/v3.1/cmake-3.1.0-Linux-i386.sh --no-check-certificate
+      bash cmake-3.1.0-Linux-i386.sh --skip-license --prefix=/usr
+    else
+      wget -nv -nc https://cmake.org/files/v3.1/cmake-3.1.0-Linux-x86_64.sh --no-check-certificate
+      bash cmake-3.1.0-Linux-x86_64.sh --skip-license --prefix=/usr
+    fi
     cmake .. 1>&2
   fi
   make -j2 1>&2
