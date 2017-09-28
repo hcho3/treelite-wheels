@@ -43,6 +43,7 @@ function pre_build {
     cmake .. 1>&2
   fi
   make -j2 1>&2
+  cd $ROOTDIR
 }
 
 function run_tests {
