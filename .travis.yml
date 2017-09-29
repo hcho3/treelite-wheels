@@ -9,11 +9,6 @@ env:
     - TEST_DEPENDS="numpy scipy pytest"
     - PLAT=x86_64
     - UNICODE_WIDTH=32
-    - WHEELHOUSE_UPLOADER_USERNAME=KIAJPEC76RDUVCFL2TQ
-    # Following generated with
-    # travis encrypt -r hcho3/treelite-wheels WHEELHOUSE_UPLOADER_SECRET=<the api key>
-    - secure:
-        "iDCw625JpPsMv3jkq5Fu5tM8BwkU0wYanV39t1zkCNN74Pq20CqWPuIwi7uKUepmgpynjlXD5WjvGyQzqp0GPGv+L5Ztp6sbkTi1YW8NUHRDJBBPKHAcyC7cGWGFqtUp2zaBQypdpUx4ZqJUNAm2KyaXhFJbO724fT3ijFAtzU9m4I8cbS2U4HAXeYwhp4eJLVHTuy6qMNTKCAFA15mchvtWnewfe2CgdoAdNXybjldZ4TAfV61RgcMv06A5acpdzyfhSd1bfptgIf3cLSk/J9WGrDvvBZivC5F6B2SKn3b9ukQ2nSaKJn9VN/DC1lEn5GWQVX3TjYgpyMIH/lN6IOqITZN9wGv+DL6IhKdTTxVR1EOK5jvwG5Z3xXZ1qHFwa/wS+qIi8OMynP5NeKFtdB7FXJOX7cUb7hGfswpoCjdlBO6yB3GWRxNJTRJIEgp1DQdDXC7cj/BWlkUqPd1oE7OqnDnwLJikuCZuAelmwzz/f6QnC0x+6SV/Zp7/SX6xeVeJcFhzxGjMnNXe7V11fXDPDyElAIXZEU4Chwwve+p3OrxPQj/bj/0mV5DKPaQ22AuvG6i8mObDqxmr2eexEj9tQcw9TR/76dZp5ExXuDa9Tez1DumCZw0SQOL5oXsgBxu4giXZwUI/hZYLGxIlXw6AjNPkwZABIycSXHa+jEk="
 
 language: python
 # The travis Python version is unrelated to the version we build and test
@@ -98,8 +93,5 @@ script:
 
 after_success:
   # Upload wheels to S3
-  - pip install wheelhouse-uploader
-  # This uploads the wheels to a S3 container owned by hcho3.
-  - python -m wheelhouse_uploader upload --provider S3_US_WEST
-      --local-folder ${TRAVIS_BUILD_DIR}/wheelhouse/
-      --no-update-index treelite-wheels
+  - pip install awscli
+  - for file in ${TRAVIS_BUILD_DIR}/wheelhouse/*.whl; do aws s3 cp "${file}" s3://treelite-wheels/; done
