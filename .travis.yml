@@ -92,6 +92,8 @@ script:
   - install_run $PLAT
 
 after_success:
+  # if linux, use manylinux1 platform tag
+  - if [ "${TRAVIS_OS_NAME}" == "linux" ]; then for file in ${TRAVIS_BUILD_DIR}/wheelhouse/*.whl; do mv "${file}" "${file/linux/manylinux1}"; done; fi
   # Upload wheels to S3
   - pip install awscli
   - for file in ${TRAVIS_BUILD_DIR}/wheelhouse/*.whl; do aws s3 cp "${file}" s3://treelite-wheels/; done
