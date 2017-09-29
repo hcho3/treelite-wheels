@@ -21,7 +21,7 @@ function pre_build {
       # install essential build tools
       brew install cmake autoconf automake libtool curl gcc@7 1>&2
       ./autogen.sh
-      CXX=g++-7 CC=gcc-7 ./configure --disable-shared
+      CXXFLAGS=-fPIC CFLAGS=-fPIC CXX=g++-7 CC=gcc-7 ./configure --disable-shared
       make -j2
       sudo make install 1>&2
     else
@@ -37,7 +37,7 @@ function pre_build {
       cd ..
       # now build protobuf
       ./autogen.sh 1>&2
-      ./configure --disable-shared
+      CXXFLAGS=-fPIC CFLAGS=-fPIC ./configure --disable-shared
       make -j2
       make install 1>&2
     fi
