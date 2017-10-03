@@ -96,6 +96,7 @@ build_script:
     # build wheel:
     - cd ..\python
     - "%CMD_IN_ENV% python setup.py bdist_wheel"
+    - dir dist
 
 test_script:
     # create test env
@@ -110,12 +111,8 @@ test_script:
     - "%CMD_IN_ENV% python -c \"import treelite\""
 
 artifacts:
-    - path: "%REPO_DIR%\\dist\\*"
+    - path: "%REPO_DIR%\\python\\dist\\*"
 
 on_success:
-  # Upload the generated wheel package to Rackspace
-  # On Windows, Apache Libcloud cannot find a standard CA cert bundle so we
-  # disable the ssl checks.
-  #- pip install wheelhouse-uploader
-  #- "python -m wheelhouse_uploader upload
-  #  --no-ssl-check --local-folder=%REPO_DIR%\\dist --no-update-index wheels"
+  - pip install awscli
+  - for %%f in (python\dist\*.whl) do (aws s3 cp "%%f" s3://treelite-wheels/)
