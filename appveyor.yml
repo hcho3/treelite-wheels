@@ -1,0 +1,119 @@
+environment:
+  global:
+    REPO_DIR: treelite
+    PACKAGE_NAME: treelite
+    BUILD_DEPENDS: "numpy scipy"
+    TEST_DEPENDS: "numpy scipy"
+    AWS_ACCESS_KEY_ID: AKIAJPEC76RDUVCFL2TQ
+    AWS_SECRET_ACCESS_KEY:
+      secure: ofeMKAxHzzw8LAwaADZ3P4eAuAohZCat3QsJYS8MOinAejkHkuCxvjYfJg+DbX5g
+
+    # SDK v7.0 MSVC Express 2008's SetEnv.cmd script will fail if the
+    # /E:ON and /V:ON options are not enabled in the batch script intepreter
+    # See: http://stackoverflow.com/a/13751649/163740
+    CMD_IN_ENV: "cmd /E:ON /V:ON /C %APPVEYOR_BUILD_FOLDER%\\multibuild\\ci\\appveyor\\windows_sdk.cmd"
+
+  matrix:
+    - PYTHON: "C:\\Miniconda"
+      PYTHON_VERSION: "2.7"
+      PYTHON_ARCH: "32"
+    - PYTHON: "C:\\Miniconda-x64"
+      PYTHON_VERSION: "2.7"
+      PYTHON_ARCH: "64"
+    - PYTHON: "C:\\Miniconda3"
+      PYTHON_VERSION: "3.4"
+      PYTHON_ARCH: "32"
+    - PYTHON: "C:\\Miniconda3-x64"
+      PYTHON_VERSION: "3.4"
+      PYTHON_ARCH: "64"
+    - PYTHON: "C:\\Miniconda35"
+      PYTHON_VERSION: "3.5"
+      PYTHON_ARCH: "32"
+    - PYTHON: "C:\\Miniconda35-x64"
+      PYTHON_VERSION: "3.5"
+      PYTHON_ARCH: "64"
+    - PYTHON: "C:\\Miniconda36"
+      PYTHON_VERSION: "3.6"
+      PYTHON_ARCH: "32"
+    - PYTHON: "C:\\Miniconda36-x64"
+      PYTHON_VERSION: "3.6"
+      PYTHON_ARCH: "64"
+
+# We always use a 64-bit machine, but can build x86 distributions
+# with the PYTHON_ARCH variable.
+platform:
+    - x64
+
+matrix:
+    fast_finish: true
+
+install:
+    # Fetch submodules
+    - git submodule update --init --recursive
+
+    # Install miniconda
+    - ps: .\\multibuild\\ci\\appveyor\\install.ps1
+    - SET PATH=%PYTHON%;%PYTHON%\Scripts;%PYTHON%\Library\bin;%PATH%
+    - conda info
+
+    # Check that we have the expected version and architecture for Python
+    - python --version
+    - python -c "import struct; print(struct.calcsize('P') * 8)"
+
+build_script:
+    # Install build requirements
+    - conda install --yes %BUILD_DEPENDS%
+
+    # Build Protobuf
+    - git clone https://github.com/google/protobuf.git
+    - cd protobuf
+    - git clone -b release-1.7.0 https://github.com/google/googlemock.git gmock
+    - cd gmock
+    - git clone -b release-1.7.0 https://github.com/google/googletest.git gtest
+    - cd ..\cmake
+    - mkdir build
+    - cd build
+    - if [%PYTHON_ARCH%]==[32] cmake -G "Visual Studio 15 2017" -DCMAKE_INSTALL_PREFIX=../.. ..
+    - if [%PYTHON_ARCH%]==[32] msbuild protobuf.sln /p:Configuration=Release /p:Platform=Win32 /m
+    - if [%PYTHON_ARCH%]==[32] msbuild INSTALL.vcxproj /p:Configuration=Release /p:Platform=Win32 /m
+    - if [%PYTHON_ARCH%]==[64] cmake -G "Visual Studio 15 2017 Win64" -DCMAKE_INSTALL_PREFIX=../.. ..
+    - if [%PYTHON_ARCH%]==[64] msbuild protobuf.sln /p:Configuration=Release /m
+    - if [%PYTHON_ARCH%]==[64] msbuild INSTALL.vcxproj /p:Configuration=Release /m
+    - cd ..\..\..
+    - set CMAKE_PREFIX_PATH=%cd%\protobuf
+
+    # Build C++ library
+    - cd %REPO_DIR%
+    - mkdir build
+    - cd build
+    - if [%PYTHON_ARCH%]==[32] cmake .. -G"Visual Studio 15 2017"
+    - if [%PYTHON_ARCH%]==[32] msbuild treelite.sln /p:Configuration=Release /p:Platform=Win32 /m
+    - if [%PYTHON_ARCH%]==[64] cmake .. -G"Visual Studio 15 2017 Win64"
+    - if [%PYTHON_ARCH%]==[64] msbuild treelite.sln /p:Configuration=Release /m
+
+    # build wheel:
+    - cd ..\python
+    - "%CMD_IN_ENV% python setup.py bdist_wheel"
+
+test_script:
+    # create test env
+    - conda create --yes -n test_env python=%PYTHON_VERSION% %TEST_DEPENDS%
+    - activate test_env
+
+    # install from wheel
+    - pip install --no-index --find-links dist/ %PACKAGE_NAME%
+
+    # run test from installed wheel.
+    - cd ..
+    - "%CMD_IN_ENV% python -c \"import treelite\""
+
+artifacts:
+    - path: "%REPO_DIR%\\dist\\*"
+
+on_success:
+  # Upload the generated wheel package to Rackspace
+  # On Windows, Apache Libcloud cannot find a standard CA cert bundle so we
+  # disable the ssl checks.
+  #- pip install wheelhouse-uploader
+  #- "python -m wheelhouse_uploader upload
+  #  --no-ssl-check --local-folder=%REPO_DIR%\\dist --no-update-index wheels"
