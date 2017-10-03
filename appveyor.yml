@@ -44,6 +44,8 @@ environment:
 platform:
     - x64
 
+image: Visual Studio 2017
+
 matrix:
     fast_finish: true
 
@@ -53,7 +55,7 @@ install:
 
     # Install miniconda
     - ps: .\\multibuild\\ci\\appveyor\\install.ps1
-    - SET PATH=%PYTHON%;%PYTHON%\Scripts;%PYTHON%\Library\bin;%PATH%
+    - set PATH=%PYTHON%;%PYTHON%\Scripts;%PYTHON%\Library\bin;%PATH%
     - conda info
 
     # Check that we have the expected version and architecture for Python
