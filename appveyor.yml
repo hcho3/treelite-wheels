@@ -68,17 +68,13 @@ build_script:
 
     # Build Protobuf
     - git clone https://github.com/google/protobuf.git
-    - cd protobuf
-    - git clone -b release-1.7.0 https://github.com/google/googlemock.git gmock
-    - cd gmock
-    - git clone -b release-1.7.0 https://github.com/google/googletest.git gtest
-    - cd ..\cmake
+    - cd protobuf\cmake
     - mkdir build
     - cd build
-    - if [%PYTHON_ARCH%]==[32] cmake -G "Visual Studio 15 2017" -DCMAKE_INSTALL_PREFIX=../.. ..
+    - if [%PYTHON_ARCH%]==[32] cmake -G "Visual Studio 15 2017" -DCMAKE_INSTALL_PREFIX=../.. -Dprotobuf_BUILD_TESTS=OFF .. 
     - if [%PYTHON_ARCH%]==[32] msbuild protobuf.sln /p:Configuration=Release /p:Platform=Win32 /m
     - if [%PYTHON_ARCH%]==[32] msbuild INSTALL.vcxproj /p:Configuration=Release /p:Platform=Win32 /m
-    - if [%PYTHON_ARCH%]==[64] cmake -G "Visual Studio 15 2017 Win64" -DCMAKE_INSTALL_PREFIX=../.. ..
+    - if [%PYTHON_ARCH%]==[64] cmake -G "Visual Studio 15 2017 Win64" -DCMAKE_INSTALL_PREFIX=../.. -Dprotobuf_BUILD_TESTS=OFF ..
     - if [%PYTHON_ARCH%]==[64] msbuild protobuf.sln /p:Configuration=Release /m
     - if [%PYTHON_ARCH%]==[64] msbuild INSTALL.vcxproj /p:Configuration=Release /m
     - cd ..\..\..
