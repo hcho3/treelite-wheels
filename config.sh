@@ -19,6 +19,7 @@ function pre_build {
     if [ -n "$IS_OSX" ]
     then
       # install essential build tools
+      brew update 1>&2
       brew install cmake autoconf automake libtool curl gcc@7 1>&2
       ./autogen.sh
       CXXFLAGS=-fPIC CFLAGS=-fPIC CXX=g++-7 CC=gcc-7 ./configure --disable-shared
