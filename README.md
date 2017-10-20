@@ -4,6 +4,8 @@ treelite wheel builder
 [![Build Status (Travis CI)](https://api.travis-ci.org/hcho3/treelite-wheels.svg?branch=master)](https://travis-ci.org/hcho3/treelite-wheels)
 [![Build Status (Appveyor)](https://ci.appveyor.com/api/projects/status/1rw7jxn4355xa3xc/branch/master?svg=true)](https://ci.appveyor.com/project/hcho3/treelite-wheels)
 
+[Get latest wheels here](http://treelite-wheels.s3.amazonaws.com/list.html)
+
 This repository contains scripts to build [Python wheels](https://pythonwheels.com/)
 for the [treelite](https://github.com/dmlc/treelite) project. Python wheels
 contain **pre-compiled binaries**, so that users no longer have to compile from
