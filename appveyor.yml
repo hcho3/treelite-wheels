@@ -111,4 +111,4 @@ artifacts:
 
 on_success:
   - pip install awscli
-  - for %%f in (python\dist\*.whl) do (aws s3 cp "%%f" s3://treelite-wheels/)
+  - for %%f in (python\dist\*.whl) do (aws s3 cp "%%f" s3://treelite-wheels/ --acl public-read)
