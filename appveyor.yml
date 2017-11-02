@@ -69,13 +69,15 @@ install:
 build_script:
     # Install build requirements
     - conda install --yes %BUILD_DEPENDS%
+    - conda create --yes -n build_env python=%PYTHON_VERSION% %BUILD_DEPENDS%
+    - activate build_env
 
     # Build Protobuf
     - git clone https://github.com/google/protobuf.git
     - cd protobuf\cmake
     - mkdir build
     - cd build
-    - if [%PYTHON_ARCH%]==[32] cmake -G "Visual Studio 15 2017" -DCMAKE_INSTALL_PREFIX=../.. -Dprotobuf_BUILD_TESTS=OFF .. 
+    - if [%PYTHON_ARCH%]==[32] cmake -G "Visual Studio 15 2017" -DCMAKE_INSTALL_PREFIX=../.. -Dprotobuf_BUILD_TESTS=OFF ..
     - if [%PYTHON_ARCH%]==[32] msbuild protobuf.sln /p:Configuration=Release /p:Platform=Win32 /m
     - if [%PYTHON_ARCH%]==[32] msbuild INSTALL.vcxproj /p:Configuration=Release /p:Platform=Win32 /m
     - if [%PYTHON_ARCH%]==[64] cmake -G "Visual Studio 15 2017 Win64" -DCMAKE_INSTALL_PREFIX=../.. -Dprotobuf_BUILD_TESTS=OFF ..
