@@ -52,6 +52,10 @@ matrix:
 install:
     # Fetch submodules
     - git submodule update --init --recursive
+    - cd multibuild && git apply ../multibuild.patch && cd ..
+
+    # Remove existing miniconda install
+    - rd /s /q %PYTHON%
 
     # Install miniconda
     - ps: .\\multibuild\\ci\\appveyor\\install.ps1

@@ -1,3 +1,16 @@
+diff --git a/ci/appveyor/install.ps1 b/ci/appveyor/install.ps1
+index ae03502..9b92717 100644
+--- a/ci/appveyor/install.ps1
++++ b/ci/appveyor/install.ps1
+@@ -10,7 +10,7 @@ function DownloadMiniconda ($python_version, $platform_suffix) {
+     if ($python_version -gt "3") {
+         $filename = "Miniconda3-latest-Windows-" + $platform_suffix + ".exe"
+     } else {
+-        $filename = "Miniconda-latest-Windows-" + $platform_suffix + ".exe"
++        $filename = "Miniconda2-latest-Windows-" + $platform_suffix + ".exe"
+     }
+     $url = $MINICONDA_URL + $filename
+ 
 diff --git a/common_utils.sh b/common_utils.sh
 index 39b4a7d..f18140d 100644
 --- a/common_utils.sh
