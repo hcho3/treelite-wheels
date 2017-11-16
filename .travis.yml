@@ -1,6 +1,8 @@
 env:
   global:
     - REPO_DIR=treelite
+    # Commit from your-project that you want to build
+    - BUILD_COMMIT=0.1rc1
     # pip dependencies to _build_ your project
     - BUILD_DEPENDS="numpy scipy"
     # pip dependencies to _test_ your project.  Include any dependencies
@@ -78,13 +80,18 @@ matrix:
         - MB_PYTHON_VERSION=3.6
 
 before_install:
+  # Set build commit
+  - git checkout $BUILD_COMMIT
+  # Apply a patch on multibuild
   - cd multibuild && git apply ../multibuild.patch && cd ..
+  # Run preparation scripts
   - source multibuild/common_utils.sh
   - source multibuild/travis_steps.sh
   - before_install
 
 install:
   - source config.sh
+  # Build wheels
   - build_wheel $REPO_DIR/python $PLAT
 
 script:

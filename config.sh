@@ -20,7 +20,7 @@ function pre_build {
     then
       # install essential build tools
       brew update 1>&2
-      brew install cmake autoconf automake libtool curl gcc@7 1>&2
+      brew install autoconf libtool curl gcc@7 1>&2
       ./autogen.sh
       CXXFLAGS=-fPIC CFLAGS=-fPIC CXX=g++-7 CC=gcc-7 ./configure --disable-shared
       make -j2

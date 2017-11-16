@@ -2,6 +2,7 @@ environment:
   global:
     REPO_DIR: treelite
     PACKAGE_NAME: treelite
+    BUILD_COMMIT: 0.1rc1
     BUILD_DEPENDS: "numpy scipy"
     TEST_DEPENDS: "numpy scipy"
     AWS_ACCESS_KEY_ID: AKIAJPEC76RDUVCFL2TQ
@@ -50,8 +51,13 @@ matrix:
     fast_finish: true
 
 install:
+    # Set build commit
+    - git checkout %BUILD_COMMIT%
+
     # Fetch submodules
     - git submodule update --init --recursive
+
+    # Apply a patch on multibuild
     - cd multibuild && git apply ../multibuild.patch && cd ..
 
     # Remove existing miniconda install
