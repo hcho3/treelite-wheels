@@ -5,9 +5,9 @@ environment:
     BUILD_COMMIT: 0.1rc1
     BUILD_DEPENDS: "numpy scipy"
     TEST_DEPENDS: "numpy scipy"
-    AWS_ACCESS_KEY_ID: AKIAJPEC76RDUVCFL2TQ
+    AWS_ACCESS_KEY_ID: AKIAJFK7DOPNEGADWPSA
     AWS_SECRET_ACCESS_KEY:
-      secure: ofeMKAxHzzw8LAwaADZ3P4eAuAohZCat3QsJYS8MOinAejkHkuCxvjYfJg+DbX5g
+      secure: 4icTruS44HKTJt0xLwyPKt40BgbcZFdR9k4W/AwIkL/Jdhcyg44lHmU5LUiMl+bS
 
     # SDK v7.0 MSVC Express 2008's SetEnv.cmd script will fail if the
     # /E:ON and /V:ON options are not enabled in the batch script intepreter
