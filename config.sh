@@ -16,6 +16,7 @@ function pre_build {
     cd ..
     git clone --recursive https://github.com/google/protobuf.git
     cd protobuf
+    git checkout v3.5.1
     if [ -n "$IS_OSX" ]
     then
       # install essential build tools

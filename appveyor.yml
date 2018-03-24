@@ -2,7 +2,7 @@ environment:
   global:
     REPO_DIR: treelite
     PACKAGE_NAME: treelite
-    BUILD_COMMIT: 0.21
+    BUILD_COMMIT: 0.30
     BUILD_DEPENDS: "numpy scipy"
     TEST_DEPENDS: "numpy scipy"
     AWS_ACCESS_KEY_ID: AKIAJFK7DOPNEGADWPSA
@@ -81,6 +81,7 @@ build_script:
     # Build Protobuf
     - git clone https://github.com/google/protobuf.git
     - cd protobuf\cmake
+    - git checkout v3.5.1
     - mkdir build
     - cd build
     - if [%PYTHON_ARCH%]==[32] cmake -G "Visual Studio 15 2017" -DCMAKE_INSTALL_PREFIX=../.. -Dprotobuf_BUILD_TESTS=OFF ..
