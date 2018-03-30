@@ -2,7 +2,7 @@ environment:
   global:
     REPO_DIR: treelite
     PACKAGE_NAME: treelite
-    BUILD_COMMIT: 0.30
+    BUILD_COMMIT: 0.31
     BUILD_DEPENDS: "numpy scipy"
     TEST_DEPENDS: "numpy scipy"
     AWS_ACCESS_KEY_ID: AKIAJFK7DOPNEGADWPSA
