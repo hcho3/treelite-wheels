@@ -24,3 +24,16 @@ index 39b4a7d..f18140d 100644
  }
  
  function build_index_wheel {
+diff --git a/supported_wheels.py b/supported_wheels.py
+index 99dcbab..b9c06dd 100755
+--- a/supported_wheels.py
++++ b/supported_wheels.py
+@@ -6,7 +6,7 @@ from __future__ import print_function
+ import sys
+ 
+ from wheel.install import WheelFile
+-from pip.pep425tags import get_supported
++from wheel.pep425tags import get_supported
+ 
+ 
+ def main():
