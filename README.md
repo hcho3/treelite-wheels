@@ -26,16 +26,16 @@ following platforms:
 
 * Windows (32-bit / 64-bit)
   - Python 2.7
-  - Python 3.4, 3.5, 3.6
+  - Python 3.4, 3.5, 3.6, 3.7, 3.8
 * Mac OS X (64-bit)
   - Python 2.7
-  - Python 3.4, 3.5, 3.6
+  - Python 3.4, 3.5, 3.6, 3.7, 3.8
 * Linux (32-bit / 64-bit)
   - Python 2.7 with &ldquo;narrow&rdquo; Unicode
     (see &ldquo;Notes on Unicode variations&rdquo; below)
   - Python 2.7 with &ldquo;wide&rdquo; Unicode
     (see &ldquo;Notes on Unicode variations&rdquo; below)
-  - Python 3.4, 3.5, 3.6
+  - Python 3.4, 3.5, 3.6, 3.7, 3.8
 
 The completed wheels get stored to an S3 bucket, until the repository owner
 shall manually upload them to PyPI.
