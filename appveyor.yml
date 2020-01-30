@@ -63,9 +63,6 @@ matrix:
     fast_finish: true
 
 install:
-    # Set build commit
-    - git checkout %BUILD_COMMIT%
-
     # Fetch submodules
     - git submodule update --init --recursive
 
