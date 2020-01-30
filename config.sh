@@ -52,7 +52,7 @@ function pre_build {
   cd treelite/build
   if [ -n "$IS_OSX" ]
   then
-    cmake .. 1>&2
+    cmake -D "CMAKE_OSX_ARCHITECTURES:STRING=x86_64" .. 1>&2
   else
     # install CMake 3.1
     if [ "$(uname -m)" == "i686" ]
