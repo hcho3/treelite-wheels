@@ -12,7 +12,7 @@ index ae03502..9b92717 100644
      $url = $MINICONDA_URL + $filename
  
 diff --git a/common_utils.sh b/common_utils.sh
-index 39b4a7d..f18140d 100644
+index 39b4a7d..6120124 100644
 --- a/common_utils.sh
 +++ b/common_utils.sh
 @@ -179,7 +179,7 @@ function build_bdist_wheel {
@@ -24,16 +24,293 @@ index 39b4a7d..f18140d 100644
  }
  
  function build_index_wheel {
+@@ -234,6 +234,7 @@ function install_wheel {
+         pip install $(pip_opts) $@ $TEST_DEPENDS
+     fi
+     # Install compatible wheel
++    pip install packaging
+     pip install $(pip_opts) $@ \
+         $(python $MULTIBUILD_DIR/supported_wheels.py $wheelhouse/*.whl)
+ }
+diff --git a/docker_build_wrap.sh b/docker_build_wrap.sh
+index bc3e9fd..adad42d 100755
+--- a/docker_build_wrap.sh
++++ b/docker_build_wrap.sh
+@@ -20,7 +20,9 @@ source $MULTIBUILD_DIR/manylinux_utils.sh
+ source $MULTIBUILD_DIR/library_builders.sh
+ 
+ # Set PATH for chosen Python, Unicode width
+-export PATH="$(cpython_path $PYTHON_VERSION $UNICODE_WIDTH)/bin:$PATH"
++PYTHON_INTERP_PATH=$(cpython_path $PYTHON_VERSION $UNICODE_WIDTH)
++echo ${PYTHON_INTERP_PATH}
++export PATH="${PYTHON_INTERP_PATH}/bin:$PATH"
+ 
+ # Change into root directory of repo
+ cd /io
+diff --git a/manylinux_utils.sh b/manylinux_utils.sh
+index 2150f0b..24e9c59 100644
+--- a/manylinux_utils.sh
++++ b/manylinux_utils.sh
+@@ -19,8 +19,14 @@ function cpython_path {
+     #
+     # For back-compatibility "u" as u_width also means "32"
+     local py_ver="${1:-2.7}"
++    local abi_suff=m
+     local u_width="${2:-${UNICODE_WIDTH}}"
+     local u_suff=u
++    # Python 3.8 and up no longer uses the PYMALLOC 'm' suffix
++    # https://github.com/pypa/wheel/pull/303
++    if [ $(lex_ver $py_ver) -ge $(lex_ver 3.8) ]; then
++        abi_suff=""
++    fi
+     # Back-compatibility
+     if [ "$u_width" == "u" ]; then u_width=32; fi
+     # For Python >= 3.3, "u" suffix not meaningful
+@@ -32,7 +38,7 @@ function cpython_path {
+         exit 1
+     fi
+     local no_dots=$(echo $py_ver | tr -d .)
+-    echo "/opt/python/cp${no_dots}-cp${no_dots}m${u_suff}"
++    echo "/opt/python/cp${no_dots}-cp${no_dots}${abi_suff}${u_suff}"
+ }
+ 
+ function repair_wheelhouse {
+diff --git a/osx_utils.sh b/osx_utils.sh
+index 18d0a3d..6f1c4cf 100644
+--- a/osx_utils.sh
++++ b/osx_utils.sh
+@@ -19,8 +19,10 @@ LATEST_2p6=2.6.6
+ LATEST_3p2=3.2.5
+ LATEST_3p3=3.3.5
+ LATEST_3p4=3.4.4
+-LATEST_3p5=3.5.3
+-LATEST_3p6=3.6.2
++LATEST_3p5=3.5.4
++LATEST_3p6=3.6.8
++LATEST_3p7=3.7.6
++LATEST_3p8=3.8.1
+ 
+ 
+ function check_python {
+@@ -79,7 +81,11 @@ function fill_pyver {
+         echo $LATEST_2p7
+     elif [ $ver == "2.6" ]; then
+         echo $LATEST_2p6
+-    elif [ $ver == 3 ] || [ $ver == "3.6" ]; then
++    elif [ $ver == 3 ] || [ $ver == "3.8" ]; then
++        echo $LATEST_3p8
++    elif [ $ver == "3.7" ]; then
++        echo $LATEST_3p7
++    elif [ $ver == "3.6" ]; then
+         echo $LATEST_3p6
+     elif [ $ver == "3.5" ]; then
+         echo $LATEST_3p5
+@@ -95,6 +101,36 @@ function fill_pyver {
+     fi
+ }
+ 
++function macpython_sdk_list_for_version {
++    # return a list of SDK targets supported for a given CPython version
++    # Parameters
++    #   $py_version (python version in major.minor.extra format)
++    # eg
++    #  macpython_sdks_for_version 2.7.15
++    #  >> 10.6 10.9
++    local _ver=$(fill_pyver $1)
++    local _major=${_ver%%.*}
++    local _return
++
++    if [ "$_major" -eq "2" ]; then
++        _return="10.6"
++        [ $(lex_ver $_ver) -ge $(lex_ver 2.7.15) ] && _return="$_return 10.9"
++    elif [ "$_major" -eq "3" ]; then
++        [ $(lex_ver $_ver) -lt $(lex_ver 3.8)    ] && _return="10.6"
++        [ $(lex_ver $_ver) -ge $(lex_ver 3.6.5)  ] && _return="$_return 10.9"
++    else
++        echo "Error version=${_ver}, expecting 2.x or 3.x" 1>&2
++        exit 1
++    fi
++    echo $_return
++}
++
++function macpython_sdk_for_version {
++    # assumes the output of macpython_sdk_list_for_version is a list
++    # of SDK versions XX.Y in sorted order, eg "10.6 10.9" or "10.9"
++    echo $(macpython_sdk_list_for_version $1) | awk -F' ' '{print $NF}'
++}
++
+ function pyinst_ext_for_version {
+     # echo "pkg" or "dmg" depending on the passed Python version
+     # Parameters
+@@ -121,18 +157,51 @@ function pyinst_ext_for_version {
+ }
+ 
+ function pyinst_fname_for_version {
+-    # echo filename for OSX installer file given Python version
++    # echo filename for OSX installer file given Python and minimum
++    # macOS versions
+     # Parameters
+-    #   $py_version (python version in major.minor.extra format)
++    #   $py_version (Python version in major.minor.extra format)
++    #   $py_osx_ver: {major.minor | not defined}
++    #       if defined, the minimum macOS SDK version that Python is
++    #       built for, eg: "10.6" or "10.9", if not defined, infers
++    #       this from $py_version using macpython_sdk_for_version
+     local py_version=$1
++    local py_osx_ver=${2:-$(macpython_sdk_for_version $py_version)}
+     local inst_ext=$(pyinst_ext_for_version $py_version)
+-    # Python 2.6 has OSX 10.3 suffix
+-    if [ "$(lex_ver $py_version)" -le "$(lex_ver 2.6.6)" ]; then
+-        local osx_ver=10.3
++    echo "python-${py_version}-macosx${py_osx_ver}.${inst_ext}"
++}
++
++function macpython_impl_for_version {
++    # echo Python implementation (cp for CPython, pp for PyPy) given a
++    # suitably formatted version string
++    # Parameters:
++    #     $version : [implementation-]major[.minor[.patch]]
++    #         Python implementation, e.g. "3.6" for CPython or
++    #         "pypy-5.4" for PyPy
++    local version=$1
++    check_var $1
++    if [[ "$version" =~ pypy-([0-9\.]+) ]]; then
++        echo pp
++    elif [[ "$version" =~ ([0-9\.]+) ]]; then
++        echo cp
+     else
+-        local osx_ver=10.6
++        echo "config error: Issue parsing this implementation in install_python:"
++        echo "    version=$version"
++        exit 1
++    fi
++}
++
++function strip_macpython_ver_prefix {
++    # strip any implementation prefix from a Python version string
++    # Parameters:
++    #     $version : [implementation-]major[.minor[.patch]]
++    #         Python implementation, e.g. "3.6" for CPython or
++    #         "pypy-5.4" for PyPy
++    local version=$1
++    check_var $1
++    if [[ "$version" =~ (pypy-)?([0-9\.]+) ]]; then
++        echo ${BASH_REMATCH[2]}
+     fi
+-    echo "python-$py_version-macosx${osx_ver}.$inst_ext"
+ }
+ 
+ function install_macpython {
+@@ -140,27 +209,38 @@ function install_macpython {
+     # Parameters:
+     #     $version : [implementation-]major[.minor[.patch]]
+     #         The Python implementation to install, e.g. "3.6" or "pypy-5.4"
++    #     $py_osx_ver: {major.minor | not defined}
++    #       if defined, the macOS version that CPython is built for, e.g.
++    #       "10.6" or "10.9". Ignored for PyPy
+     local version=$1
+-    if [[ "$version" =~ pypy-([0-9\.]+) ]]; then
+-        install_mac_pypy "${BASH_REMATCH[1]}"
+-    elif [[ "$version" =~ ([0-9\.]+) ]]; then
+-        install_mac_cpython "${BASH_REMATCH[1]}"
++    local py_osx_ver=$2
++    local impl=$(macpython_impl_for_version $version)
++    local stripped_ver=$(strip_macpython_ver_prefix $version)
++    if [[ "$impl" == "pp" ]]; then
++        install_mac_pypy $stripped_ver
++    elif [[ "$impl" == "cp" ]]; then
++        install_mac_cpython $stripped_ver $py_osx_ver
+     else
+-        echo "config error: Issue parsing this implementation in install_python:"
+-        echo "    version=$version"
++        echo "Unexpected Python impl: ${impl}"
+         exit 1
+     fi
+ }
+ 
+ function install_mac_cpython {
+     # Installs Python.org Python
+-    # Parameter $version
+-    # Version given in major or major.minor or major.minor.micro e.g
+-    # "3" or "3.4" or "3.4.1".
+-    # sets $PYTHON_EXE variable to python executable
++    # Parameters
++    #   $py_version
++    #       Version given in major or major.minor or major.minor.micro e.g
++    #       "3" or "3.7" or "3.7.1".
++    #   $py_osx_ver
++    #       {major.minor | not defined}
++    #       if defined, the macOS version that Python is built for, e.g.
++    #        "10.6" or "10.9"
++    # sets $PYTHON_EXE variable to Python executable
+     local py_version=$(fill_pyver $1)
++    local py_osx_ver=$2
+     local py_stripped=$(strip_ver_suffix $py_version)
+-    local py_inst=$(pyinst_fname_for_version $py_version)
++    local py_inst=$(pyinst_fname_for_version $py_version $py_osx_ver)
+     local inst_path=$DOWNLOADS_SDIR/$py_inst
+     mkdir -p $DOWNLOADS_SDIR
+     curl $MACPYTHON_URL/$py_stripped/${py_inst} > $inst_path
+@@ -273,6 +353,9 @@ function get_macpython_environment {
+     #     $venv_dir : {directory_name|not defined}
+     #         If defined - make virtualenv in this directory, set python / pip
+     #         commands accordingly
++    #     $py_osx_ver: {major.minor | not defined}
++    #         if defined, the macOS version that Python is built for, e.g.
++    #         "10.6" or "10.9", if not defined, use the version from MB_PYTHON_OSX_VER
+     #
+     # Installs Python
+     # Sets $PYTHON_EXE to path to Python executable
+@@ -281,8 +364,9 @@ function get_macpython_environment {
+     # Puts directory of $PYTHON_EXE on $PATH
+     local version=$1
+     local venv_dir=$2
++    local py_osx_ver=${3:-$MB_PYTHON_OSX_VER}
+     remove_travis_ve_pip
+-    install_macpython $version
++    install_macpython $version $py_osx_ver
+     install_pip
+     if [ -n "$venv_dir" ]; then
+         install_virtualenv
 diff --git a/supported_wheels.py b/supported_wheels.py
-index 99dcbab..b9c06dd 100755
+index 99dcbab..81a623d 100755
 --- a/supported_wheels.py
 +++ b/supported_wheels.py
-@@ -6,7 +6,7 @@ from __future__ import print_function
- import sys
+@@ -4,15 +4,33 @@
+ from __future__ import print_function
  
- from wheel.install import WheelFile
+ import sys
++from os.path import basename
+ 
+-from wheel.install import WheelFile
 -from pip.pep425tags import get_supported
-+from wheel.pep425tags import get_supported
++from packaging.tags import sys_tags
++
++try:
++    from wheel.install import WHEEL_INFO_RE as wheel_matcher
++except ImportError:  # As of Wheel 0.32.0
++    from wheel.wheelfile import WHEEL_INFO_RE
++    wheel_matcher = WHEEL_INFO_RE.match
++
++
++def tags_for(fname):
++    # Copied from WheelFile code
++    parsed_filename = wheel_matcher(basename(fname))
++    tags = parsed_filename.groupdict()
++    for pyver in tags['pyver'].split('.'):
++        for abi in tags['abi'].split('.'):
++            for plat in tags['plat'].split('.'):
++                yield (pyver, abi, plat)
  
  
  def main():
+-    supported = set(get_supported())
++    supported = {(tag.interpreter, tag.abi, tag.platform)
++                 for tag in sys_tags()
++    }
+     for fname in sys.argv[1:]:
+-        tags = set(WheelFile(fname).tags)
++        tags = set(tags_for(fname))
+         if supported.intersection(tags):
+             print(fname)
+ 
