@@ -28,7 +28,7 @@ function pre_build {
       sudo make install 1>&2
     else
       # install essential build tools
-      yum install autoconf automake unzip gcc-c++ git -y 1>&2
+      yum install autoconf automake unzip gcc-c++ git wget -y 1>&2
       # compile libtool from source, as libtool package for CentOS 5 is very outdated
       wget -nv -nc http://ftpmirror.gnu.org/libtool/libtool-2.4.6.tar.gz
       tar xvf libtool-2.4.6.tar.gz
