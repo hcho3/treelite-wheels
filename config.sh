@@ -21,9 +21,9 @@ function pre_build {
     then
       # install essential build tools
       brew update 1>&2
-      brew install autoconf libtool curl gcc@7 1>&2
+      brew install autoconf libtool curl 1>&2
       ./autogen.sh
-      CXXFLAGS=-fPIC CFLAGS=-fPIC CXX=g++-7 CC=gcc-7 ./configure --disable-shared
+      CXXFLAGS=-fPIC CFLAGS=-fPIC ./configure --disable-shared
       make -j2
       sudo make install 1>&2
     else
@@ -52,7 +52,7 @@ function pre_build {
   cd treelite/build
   if [ -n "$IS_OSX" ]
   then
-    cmake .. -DCMAKE_CXX_COMPILER=g++-7 -DCMAKE_C_COMPILER=gcc-7 1>&2
+    cmake .. 1>&2
   else
     # install CMake 3.1
     if [ "$(uname -m)" == "i686" ]
