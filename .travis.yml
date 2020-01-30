@@ -17,6 +17,7 @@ language: python
 # with.  This is set with the MB_PYTHON_VERSION variable.
 python: 3.6
 sudo: required
+osx_image: xcode10.3
 dist: bionic
 services: docker
 
@@ -89,6 +90,16 @@ matrix:
       language: generic
       env:
         - MB_PYTHON_VERSION=3.6
+
+# dependent brew packages
+addons:
+  homebrew:
+    packages:
+      - autoconf
+      - libtool
+      - curl
+      - cmake
+    update: true
 
 before_install:
   # Apply a patch on multibuild

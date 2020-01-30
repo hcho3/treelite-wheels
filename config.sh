@@ -20,8 +20,6 @@ function pre_build {
     if [ -n "$IS_OSX" ]
     then
       # install essential build tools
-      brew update 1>&2
-      brew install autoconf libtool curl 1>&2
       ./autogen.sh
       CXXFLAGS=-fPIC CFLAGS=-fPIC ./configure --disable-shared
       make -j2
