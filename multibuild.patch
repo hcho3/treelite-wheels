@@ -314,3 +314,16 @@ index 99dcbab..81a623d 100755
          if supported.intersection(tags):
              print(fname)
  
+diff --git a/travis_osx_steps.sh b/travis_osx_steps.sh
+index e838809..6538755 100644
+--- a/travis_osx_steps.sh
++++ b/travis_osx_steps.sh
+@@ -13,8 +13,6 @@ source $MULTIBUILD_DIR/library_builders.sh
+ # config.sh can override any function defined here.
+ 
+ function before_install {
+-    export CC=clang
+-    export CXX=clang++
+     get_macpython_environment $MB_PYTHON_VERSION venv
+     source venv/bin/activate
+     pip install --upgrade pip wheel
