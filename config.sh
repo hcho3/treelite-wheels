@@ -20,6 +20,7 @@ function pre_build {
     if [ -n "$IS_OSX" ]
     then
       # install essential build tools
+      sudo softwareupdate -i "Command Line Tools (macOS High Sierra version 10.13) for Xcode-9.3"
       ./autogen.sh
       CXXFLAGS=-fPIC CFLAGS=-fPIC ./configure --disable-shared
       make -j2
